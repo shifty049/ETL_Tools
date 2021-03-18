@@ -43,3 +43,10 @@
     - timeout : setting timeout seconds with 15 seconds as default
 - return : is_operate_succeed (boolean)
 
+```
+# CALL MODULE
+php = PhpMyAdminHandler(path_of_task, php_proxy = 'CORP', s3_proxy = 'CORP', slack_proxy = 'CORP', slack_channel = 'log-test')
+
+# EXECUTE DOWNLOAD PROCESS TO DOWNLOAD QUERY RESULT AS CSV FILE
+php.FileHandler(task_name)
+```

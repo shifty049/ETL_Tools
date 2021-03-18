@@ -27,9 +27,10 @@
 ## Functions</br></br>
 >InsertInto - `insert data into table`
 - parameter:
-    - data   : data for inserting into table (type: dataframe)
-    - table  : table name of inserted table (case sensitive)
-    - schema : schama name of inserted table with default = 'public' (case sensitive)
+    - data      : data for inserting into table (type: dataframe)
+    - table     : table name of inserted table (case sensitive)
+    - data_type : type of data inserted into table (type chosen from dataframe / list with default = dataframe)
+    - schema    : schama name of inserted table with default = 'public' (case sensitive)
 - return : is_insert_succeed (boolean)
 
 >Truncate - `truncate table`      
@@ -54,3 +55,17 @@
 >CloseWork - `close connection to database`
 
 - return : is_close_succeed (boolean)
+
+```
+# CALL MODULE
+psg = PostgreSQLHandler(server = 'LDCDataTest', database = 'Data_ETL', connect_timeout = 15, slack_proxy = 'CORP', slack_channel = 'log-test')
+
+# READ QUERY AS DATAFRAME
+psg.ReadQueryAsDataFrame(select_query)
+
+# TRUNCATE ASSIGNED TABLE
+psg.Truncate(table, schema)
+
+# INSERT DATA INTO ASSIGNED TABLE
+psg.InsertInto(data, table, data_type, schema)
+```

@@ -30,6 +30,7 @@ UploadFileASBlob
     - upload_file_path : absolute path of uploaded file
     - container_name   : container chosen to be uploaded
     - blob_name        : Blob name (extension included) of uploaded file
+    - if_overwrite     : decide whether to overwrite the blob file already existing in container with the same name as the uploaded file. set default = True
 - return : is_upload_succeed (boolean)
 
 >DeleteBlob - `used for uploading file as Blob`
@@ -48,7 +49,7 @@ UploadFileASBlob
 
 ## Sample Code</br></br>
 ```
-# CALL Module
+# CALL MODULE
 abh = AzureBlobHandler(account_name)
 
 # UPLOAD

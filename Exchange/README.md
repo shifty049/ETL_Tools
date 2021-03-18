@@ -33,6 +33,7 @@
 
 ## Sample Code</br></br>
 ```
+# SEND MAIL
 exchange = ExchangeMailHandler()
 
 if exchange.is_connect_succeed:

@@ -45,12 +45,13 @@ class AzureBlobHandler(SlackHandler):
         else:
             self.service_client = BlobServiceClient.from_connection_string(connection_string)
     
-    def UploadFileASBlob(self,upload_file_path, container_name, blob_name):
+    def UploadFileASBlob(self,upload_file_path, container_name, blob_name, if_overwrite = True):
         '''
         purpose                : used for uploading file as Blob
         param upload_file_path : absolute path of uploaded file
         param container_name   : container chosen to be uploaded  
-        param blob_name        : Blob name (extension included) of uploaded file  
+        param blob_name        : Blob name (extension included) of uploaded file
+        param if_overwrite     : decide whether to overwrite the blob file already existing in container with the same name as the uploaded file. set default = True
         return is_upload_succeed(boolean)
         '''
         starting_time = datetime.now()    
@@ -60,7 +61,7 @@ class AzureBlobHandler(SlackHandler):
             blob_client = self.service_client.get_blob_client(container = container_name, blob = blob_name)
 
             with open(upload_file_path, "rb") as data:
-                blob_client.upload_blob(data)
+                blob_client.upload_blob(data, overwrite = if_overwrite)
             
             is_upload_succeed = True
         

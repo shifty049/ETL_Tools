@@ -49,3 +49,21 @@
 - parameters :
     - range_to_clear            : range of assigned GoogleSheet for clearing
 - return : is_clear_succeed (boolean)
+
+## Sample Code</br></br>
+```
+# CALL MODULE
+gs = GoogleSheetHandler(gspread_key_name, gs_proxy = 'CORP', gs_timeout = 10, slack_proxy = 'CORP', slack_channel = 'log-test')
+
+# READ GOOGLESHEET AS DATAFRAME
+gs.ReadAsDataFrame()
+
+# UPDATE SINGLE CELL CONTENT
+gs.UpdateCell(cell_location, updated_content)
+
+# UPDATE CELL CONTENT BY RANGE
+gs.UpdateCellByRange(sheet_range, updated_value_list)
+
+# CLEAR PROXY
+gs.ClearProxy()
+```

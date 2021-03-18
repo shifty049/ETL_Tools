@@ -35,3 +35,17 @@
     - channel   : assigned channel for deleteing all messages
     - day_bound : delete messages created how many days ago with default = 3 which means delete messages 3 days ago before current timestamp
 - return : is_delete_succeed (boolean)
+
+```
+# CALL MODULE
+slk = SlackHandler(slack_proxy = 'CORP', slack_channel = 'log-test', slack_timeout = 10)
+
+# POST MESSAGE TO ASSIGNED CHANNEL
+slk.PostMessage(channel, message, username, stopword = None)
+
+# DELETE MESSAGES `N` DAYS BEFORE AT ASSIGNED CHANNEL
+slk.DeleteMessage(channel, N)
+
+# SCHEDULE POSTING A MESSAGE ON AN ASSIGNED CHANNEL
+psg.ScheduleMessage(text, channel, unix_timestamp)
+```
