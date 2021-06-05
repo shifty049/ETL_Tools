@@ -26,7 +26,7 @@
 
 ## Functions</br></br>
 >InsertInto - `insert data into table`
-- parameter:
+- parameters:
     - data      : data for inserting into table (type: dataframe)
     - table     : table name of inserted table (case sensitive)
     - data_type : type of data inserted into table (type chosen from dataframe / list with default = dataframe)

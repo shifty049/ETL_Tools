@@ -4,6 +4,7 @@ import os
 import gspread
 from datetime import datetime
 from oauth2client.service_account import ServiceAccountCredentials
+from S3.S3Handler import S3Handler
 from Slack.SlackHandler import SlackHandler
 from func_timeout import func_set_timeout, FunctionTimedOut
 
@@ -11,29 +12,31 @@ auth_json_path = '/Users/benq/Desktop/my-project-etl-290207-41dd883992be.json'
 spreadsheet_key = '1f9wGqjnOruOHabAPe2mDsZYODwHyWsu0N-BT2Y7udz8'
 
 
-class GoogleSheetHandler(SlackHandler):
+class GoogleSheetHandler(S3Handler):
     '''
     purpose                  : interact with Googlesheet API
     param gspread_key_name   : name of gspread key name at key.txt with etl_schdule for BenQ-Data_ETL schedule management 
                                and si_company_list for SI Company List and etl_schdule as default
     param sheet_name         : sheet name of google sheet
     param gs_proxy           : proxy setting for gspread chosen from ('AWS' / 'GCP' / 'CORP' / 'LOCAL')
+    param s3_proxy           : proxy setting for boto3 chosen from ('AWS' / 'GCP' / 'CORP' / 'LOCAL')
     param slack_proxy        : proxy setting for slack chosen from ('AWS' / 'GCP' / 'CORP' / 'LOCAL')
     param slack_channel      : slack channel for recording log 
     '''
 
-    def __init__(self, gspread_key_name = 'etl_schdule', gs_proxy = 'CORP', gs_timeout = 10, slack_proxy = 'CORP', slack_channel = 'log-test'):
+    def __init__(self, gspread_key_name = 'etl_schdule', gs_proxy = 'CORP', gs_timeout = 10, s3_proxy = 'CORP', slack_proxy = 'CORP', slack_channel = 'log-test'):
         '''
         purpose                  : used for interacting with Googlesheet API
         param gspread_key_name   : name of gspread key name at key.txt with etl_schdule for BenQ-Data_ETL schedule management 
                                    and si_company_list for SI Company List and etl_schdule as default
         param gs_proxy           : gspread proxy chosen from AWS /GCP / CORP with default = 'CORP'
         param gs_timeout         : timeout setting for gs connection with default = 15 seconds
+        param s3_proxy           : s3 proxy chosen from AWS /GCP / CORP or None (not setting proxy) with default = 'CORP'
         param slack_proxy        : slack proxy chosen from AWS /GCP / CORP or None (not setting proxy) with default = 'CORP'
         param slack_channel      : slack channel for recording log with default = 'log-test'
         '''
      
-        super().__init__(slack_proxy, slack_channel)
+        super().__init__(s3_proxy , slack_proxy, slack_channel)
         
         connect_starting_time = datetime.now()
         self.is_connect_succeed = False

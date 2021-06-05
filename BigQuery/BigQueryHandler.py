@@ -1,29 +1,30 @@
 import sys
+sys.path.append('..')
 import os
 import google.auth
-sys.path.append('..')
-from Slack.SlackHandler import SlackHandler
+from S3.S3Handler import S3Handler
 from google.cloud import bigquery
-from google.cloud import bigquery_datatransfer
 from datetime import datetime,timedelta
 
-class BigQueryHandler(SlackHandler):
+class BigQueryHandler(S3Handler):
     '''
     purpose                  : interact with BigQuery
     param bigquery_proxy     : proxy setting for bigquery chosen from ('AWS' / 'GCP' / 'CORP' / 'LOCAL')
+    param s3_proxy           : proxy setting for boto3 chosen from ('AWS' / 'GCP' / 'CORP' / 'LOCAL')
     param slack_proxy        : proxy setting for slack chosen from ('AWS' / 'GCP' / 'CORP' / 'LOCAL')
     param slack_channel      : slack channel for recording log 
     '''
     
-    def __init__(self, bigquery_proxy = 'CORP', slack_proxy = 'CORP', slack_channel = 'log-test'):
+    def __init__(self, bigquery_proxy = 'CORP', s3_proxy = 'CORP', slack_proxy = 'CORP', slack_channel = 'log-test'):
         '''
         purpose                  : used for interacting with BigQuery
         param bigquery_proxy     : bigquery proxy chosen from AWS / GCP / CORP or LOCAL (not setting proxy) with default = 'CORP'
+        param s3_proxy           : s3 proxy chosen from AWS /GCP / CORP or LOCAL (not setting proxy) with default = 'CORP'
         param slack_proxy        : slack proxy chosen from AWS /GCP / CORP or LOCAL (not setting proxy) with default = 'CORP'
         param slack_channel      : slack channel for recording log with default = 'log-test'
         '''
         # change initial slack proxy setting of SlackHandler & s3 proxy setting of S3Handler       
-        super().__init__(slack_proxy, slack_channel)    
+        super().__init__(s3_proxy , slack_proxy, slack_channel)    
     
         if bigquery_proxy != 'LOCAL':
             bigquery_proxy_setting = 'http://{}:{}'.format(self.key_dict['proxy'][bigquery_proxy]['host'], self.key_dict['proxy'][bigquery_proxy]['port'])
@@ -44,7 +45,7 @@ class BigQueryHandler(SlackHandler):
         param query    :  query for executing in BigQuery
         return result_dict : a dictionary containing 1. is_read_succeed (boolean) 2. read_df (DataFrame) => only exists if is_read_succeed == True
         '''
-        
+             
         result_dict ={}
         read_starting_time = datetime.now()
         is_read_succeed = False
@@ -67,7 +68,6 @@ class BigQueryHandler(SlackHandler):
         self.PostMessage(self.slack_channel, message, '{}_Log_BigQuery'.format('Correct' if is_read_succeed else 'Error'))  
         return result_dict
     
-
     def ReadBigQueryAsObject(self, query):
         '''
         purpose        :  read query result as list
@@ -208,50 +208,3 @@ class BigQueryHandler(SlackHandler):
         self.PostMessage(self.slack_channel, message, '{}_Log_BigQuery'.format('Correct' if is_delete_succeed else 'Error'))  
         
         return is_delete_succeed
-    
-    def ScheduledQueriesCheck(self, scheduled_queries_name, project_id = 'benq-data-etl'):
-        '''
-        purpose                      : used for checking state of scheduled queries
-        param scheduled_queries_name : display name of scheduled queries
-        param project_id             : id of project with default = benq-data-etl
-        return dictionary            : is_check_succeed => (boolean : required), is_query_execute_succeed => (boolean : required)
-        '''
-        
-        starting_time = datetime.now()   
-        is_check_succeed = False
-        is_query_execute_succeed = False
-        
-        try:
-            transfer_client = bigquery_datatransfer.DataTransferServiceClient()
-
-            parent = transfer_client.common_project_path(project_id)
-
-            configs = transfer_client.list_transfer_configs(parent = parent)
-            
-            config = next(filter(lambda x: x.display_name == scheduled_queries_name, configs), None)
-            
-            if config:
-                
-                is_query_execute_succeed = True if config.state.name == 'SUCCEEDED' else False
-                
-                is_check_succeed = True
-            
-            else:
-                error_log  = 'config of {} not found'.format(scheduled_queries_name)
-        
-        except Exception as E:
-            
-            error_log = str(E)
-        
-        ending_time = datetime.now()
-        
-        message = '{} to check state of scheduled queries: {}{} using time: {}'.format('Succeeded' if is_check_succeed else 'Failed', 
-                                                                                    scheduled_queries_name, 
-                                                                                    '' if is_check_succeed else ' due to {}'.format(error_log), 
-                                                                                    ending_time - starting_time)
-        
-        print(message + '\n\n')
-        
-        self.PostMessage(self.slack_channel, message, '{}_Log_BigQuery'.format('Correct' if is_check_succeed else 'Error'))  
-        
-        return {'is_check_succeed': is_check_succeed, 'is_query_execute_succeed': is_query_execute_succeed}

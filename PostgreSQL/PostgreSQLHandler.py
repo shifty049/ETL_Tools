@@ -5,8 +5,6 @@ from psycopg2.extras import execute_values
 from datetime import datetime
 import json
 import psycopg2
-import pandas as pd
-import numpy as np
 
 class PostgreSQLHandler(SlackHandler):
     '''
@@ -55,14 +53,15 @@ class PostgreSQLHandler(SlackHandler):
         
         self.PostMessage(self.slack_channel, message, '{}_Log_PostgreSQL'.format('Correct' if self.is_connect_succeed else 'Error'))
     
-    def InsertInto(self, data, table, data_type = 'dataframe', schema = 'public'):
+    def InsertInto(self, data, table, data_type = 'dataframe', schema = 'public', is_neeed_process = True):
         
         '''
-        purpose              : insert data into table
-        param data           : data for inserting into table 
-        param table          : table name of inserted table (case sensitive)
-        param data_type      : type of data inserted into table (type chosen from dataframe / list with default = dataframe)
-        param schema         : schama name of inserted table with default = 'public' (case sensitive)
+        purpose                : insert data into table
+        param data             : data for inserting into table 
+        param table            : table name of inserted table (case sensitive)
+        param data_type        : type of data inserted into table (type chosen from dataframe / list with default = dataframe)
+        param schema           : schama name of inserted table with default = 'public' (case sensitive)
+        param is_neeed_process : check if need to procees inserted data with default = True
         return is_insert_succeed (boolean)
         '''     
         insert_starting_time = datetime.now()
@@ -76,11 +75,12 @@ class PostgreSQLHandler(SlackHandler):
             # commit for avoiding idle in transaction
             self.connection.commit()
             
-            # transformed data for inserting
-            inserted_data = self.DataProcess(data, data_type)
+            # process data for inserting
+            if is_neeed_process:
+                data = self.DataProcess(data, data_type)
             
             # execute batch inserting process
-            execute_values(self.cur, '''INSERT INTO {}.{} ({}) VALUES %s '''.format(schema, table, ','.join(['"{}"'.format(col) for col in columns_list])), inserted_data)               
+            execute_values(self.cur, '''INSERT INTO {}.{} ({}) VALUES %s '''.format(schema, table, ','.join(['"{}"'.format(col) for col in columns_list])), data)               
             self.connection.commit()
             
             is_insert_succeed = True
@@ -90,7 +90,7 @@ class PostgreSQLHandler(SlackHandler):
             error_log = str(E)
         insert_ending_time = datetime.now()
         insert_message = '{} to insert data with row number : {} into {}.{} using time: {}{}'.format('Succeeded' if is_insert_succeed else 'Failed', 
-                                                                                    len(inserted_data), schema, table, 
+                                                                                    len(data), schema, table, 
                                                                                     insert_ending_time - insert_starting_time, 
                                                                                     '' if is_insert_succeed else ' with error log: {}'.format(error_log))
         
@@ -126,9 +126,6 @@ class PostgreSQLHandler(SlackHandler):
         self.PostMessage(self.slack_channel, truncate_message, 'Correct_Log_PostgreSQL' if is_truncate_succeed else 'Error_Log_PostgreSQL')
         return is_truncate_succeed
         
-            
-            
-        
     def DataProcess(self, data, data_type):
         '''
         purpose                : process data for inserting into table
@@ -141,7 +138,9 @@ class PostgreSQLHandler(SlackHandler):
             '''
             purpose  : function for dealing with each item
             '''
-            
+            import numpy as np
+            import pandas as pd
+
             if type(item) == pd._libs.tslibs.timestamps.Timestamp:
                 return str(item)
             
@@ -177,6 +176,7 @@ class PostgreSQLHandler(SlackHandler):
         is_read_succeed = False
 
         try:
+            import pandas as pd
             read_df = pd.read_sql_query(query, self.connection)
             self.connection.commit()
             is_read_succeed = True         

@@ -6,9 +6,6 @@
 ## Install
 ```
 1. Python3
-2. slackclient
-3. idna
-4. idna_ssl
 ```
 ***
 ## Dependency</br></br>      

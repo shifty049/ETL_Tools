@@ -69,6 +69,7 @@ class TableauHandler(S3Handler):
                   'view_id' : view.id
                  }
                 )
+            
             is_login_succeed = True
             
         except Exception as E:
@@ -170,7 +171,6 @@ class TableauHandler(S3Handler):
         try:
             self.server.auth.sign_out()
             is_logout_succeed=True
-            
         except Exception as E:
             error_log=str(E)
 

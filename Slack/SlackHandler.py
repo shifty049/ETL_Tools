@@ -4,7 +4,6 @@ import pytz
 import time
 import requests
 from Key_Management.KeyManagement import KeyManagement
-from slack import WebClient
 from datetime import datetime, timedelta
 from urllib.parse import urlencode, quote
 
